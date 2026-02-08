@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Scan Result</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  html,body{height:100%;margin:0;font-family:Inter, "Poppins", system-ui, Arial;background:#030416;color:#ecf9f1;}
+  body{
+    background: radial-gradient(1200px 600px at 10% 10%, rgba(0,140,255,0.06), transparent 10%),
+                radial-gradient(900px 500px at 90% 90%, rgba(0,255,190,0.03), transparent 10%),
+                linear-gradient(120deg,#071226 0%, #07121a 100%);
+    display:flex;align-items:center;justify-content:center;padding:28px;
+  }
+  .card{width:920px;max-width:100%;display:grid;grid-template-columns:420px 1fr;gap:20px;background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:14px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,0.6)}
+  .left{display:flex;flex-direction:column;align-items:center;padding:10px}
+  .img-wrap{width:360px;height:360px;border-radius:12px;background:#020617;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+  .img-wrap img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px;box-shadow:0 6px 30px rgba(0,0,0,0.6)}
+  .match-badge{display:inline-block;padding:8px 12px;border-radius:999px;background:linear-gradient(90deg,#00e6a8,#00c3ff);color:#022022;font-weight:800}
+  .right{padding:12px;display:flex;flex-direction:column;gap:12px}
+  .title{font-size:20px;font-weight:700;color:#c8fff0}
+  .result-box{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,0.02)}
+  .stage{display:flex;align-items:center;justify-content:space-between;padding:10px;border-radius:10px;background:rgba(0,0,0,0.25);font-weight:600}
+  .stage span.label{font-size:13px;color:#aef7d8}
+  .stage span.status{font-size:13px;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,0.35);color:#e9fff7}
+  .logs{font-family:monospace;background:rgba(0,0,0,0.25);padding:10px;border-radius:8px;height:150px;overflow:auto;color:#dfffe8}
+  audio{width:100%;margin-top:8px}
+  .actions{display:flex;gap:8px;margin-top:8px}
+  .btn{padding:10px 14px;border-radius:10px;border:none;background:linear-gradient(90deg,#00c3ff,#00e676);color:#012;background-size:200% 200%;cursor:pointer;font-weight:700}
+  .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#dfffe8;font-weight:600}
+  @media(max-width:980px){.card{grid-template-columns:1fr;padding:12px}.img-wrap{width:100%;height:260px}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="left">
+    <div class="img-wrap">
+      <img src="{{ uploaded_image }}" alt="uploaded image">
+    </div>
+    <div style="margin-top:12px;text-align:center">
+      {% if matched_stage %}
+        <div class="match-badge">FOUND — {{ matched_stage }}</div>
+      {% else %}
+        <div style="color:#ffd6d6;font-weight:700">No match found</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="title">Scan Summary</div>
+
+    <div class="result-box">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-weight:800;color:#eafff0">{{ match_info }}</div>
+          <div style="font-size:13px;color:#a9f0e0;margin-top:6px">Name: {{ name or '—' }} • Age: {{ age or '—' }} • Last seen: {{ last_seen or '—' }}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:12px;color:#a8f2de">Confidence</div>
+          <div style="font-weight:800;font-size:20px;color:#00ffb0">86%</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px" class="stage">
+        <span class="label">Stage 1 — Police DB</span>
+        <span class="status">{{ 'Matched' if matched_stage and 'Police' in matched_stage else 'Checked' }}</span>
+      </div>
+
+      <div style="margin-top:8px" class="stage">
+        <span class="label">Stage 2 — Hospital DB</span>
+        <span class="status">{{ 'Matched' if matched_stage and 'Hospital' in matched_stage else 'Checked' }}</span>
+      </div>
+
+      <div style="margin-top:8px" class="stage">
+        <span class="label">Stage 3 — CCTV DB</span>
+        <span class="status">{{ 'Matched' if matched_stage and 'CCTV' in matched_stage else 'Checked' }}</span>
+      </div>
+
+      <div style="margin-top:8px" class="stage">
+        <span class="label">Stage 4 — Morgue DB</span>
+        <span class="status">{{ 'Matched' if matched_stage and 'Morgue' in matched_stage else 'Checked' }}</span>
+      </div>
+
+      <div style="margin-top:12px">
+        <div style="font-weight:700;margin-bottom:6px">Stage Logs</div>
+        <div class="logs">
+          {% for l in logs %}
+            <div>{{ l }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {% if audio_web_path %}
+      <div style="margin-top:12px">
+        <div style="font-weight:700;margin-bottom:6px">Voice Output</div>
+        <audio controls autoplay>
+          <source src="{{ audio_web_path }}" type="audio/mpeg">
+          Your browser does not support audio playback.
+        </audio>
+      </div>
+      {% endif %}
+
+      <div class="actions" style="margin-top:12px">
+        <a href="/" class="btn secondary">🔄 New Search</a>
+        <button class="btn" onclick="window.print()">🖨️ Print</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
