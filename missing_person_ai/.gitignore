@@ -1,0 +1,12 @@
+# Ignore audio files
+*.mp3
+
+# Ignore uploads
+static/uploads/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore environment
+venv/
